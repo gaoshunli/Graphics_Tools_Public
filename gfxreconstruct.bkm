@@ -1,0 +1,50 @@
+Vulkan Capture&Replay
+
+git clone https://github.com/LunarG/gfxreconstruct.git
+git submodule update --init
+
+
+Build for Android:
+
+cd android
+export ANDROID_HOME=$HOME/Android/Sdk                                                                                                                                                                                                                                         export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64                                                                                                                                                                                                                           export ANDROID_SDK_ROOT=$HOME/Android/Sdk
+./gradlew assembleDebug 
+
+
+Capture on Android:
+
+adb push layer/build/intermediates/cmake/debug/obj/x86_64/libVkLayer_gfxreconstruct.so /data/app/~~xr3FRnqu1B5z96WfH4SqrA==/com.Zeekr.FireWork-fe2Zpw4gNgMtG9ULQcuG6A==/lib/x86_64/                                                                                         
+ adb shell settings put global enable_gpu_debug_layers 1                                                                                                                                                                                                                       adb shell settings put global gpu_debug_app com.Zeekr.FireWork                                                                                                                                                                                                                adb shell settings put global gpu_debug_layers VK_LAYER_LUNARG_gfxreconstruct                                                                                                                                                                                                 
+adb shell "setprop debug.gfxrecon.capture_file '/data/local/traces'"
+
+
+
+Replay on Android:
+
+cd android
+./scripts/gfxrecon.py install-apk tools/replay/build/outputs/apk/debug/replay-debug.apk
+                                                                                                                                                                                                                                                                              adb shell appops set com.lunarg.gfxreconstruct.replay MANAGE_EXTERNAL_STORAGE allow
+adb pull /data/local/traces /home/6tdisk/firework/vkcube.trace
+./scripts/gfxrecon.py replay --push-file /home/6tdisk/firework/vkcube.trace /data/local/traces/vkcube.trace
+
+
+
+
+
+Build&replay on Linux:
+
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make -j6  
+cd gfxreconstruct/build/tools/replay                                                                                                                                                                                                                  ./gfxrecon-replay ~/fireworkvk.trace --wsi xcb 
+
+
+
+Build&replay for windows: 
+open windows powershell                                                                                                                                                                                                                                                       
+git clone https://github.com/LunarG/gfxreconstruct.git                                                                                                                                                                                                                        git submodule update --init 
+cd gfxreconstruct                                                                                                                                                                                                                                                  python scripts/build.py --skip-d3d12-support  
+cd build\windows\x64\output\bin
+.\gfxrecon-replay.exe .\vkcube.trace --wsi win32 -m remap
+
